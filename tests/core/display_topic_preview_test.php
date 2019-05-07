@@ -35,38 +35,39 @@ class display_topic_preview_test extends base
 			->getMock();
 		$this->avatar_driver->expects($this->any())
 			->method('get_name')
-			->will($this->returnValue('avatar.driver.local'));
+			->willReturn('avatar.driver.local');
 		$this->avatar_driver->expects($this->any())
 			->method('get_config_name')
-			->will($this->returnValue('local'));
+			->willReturn('local');
 		$this->avatar_driver->expects($this->any())
 			->method('get_data')
-			->will($this->returnValue(self::$avatar_data));
+			->willReturn(self::$avatar_data);
 
 		/** @var \phpbb\request\request|\PHPUnit_Framework_MockObject_MockObject $request */
 		$request = $this->getMockBuilder('\phpbb\request\request')
 			->disableOriginalConstructor()
 			->getMock();
 
-		$phpbb_path_helper = new \phpbb\path_helper(
-			new \phpbb\symfony_request(
-				new \phpbb_mock_request()
-			),
-			new \phpbb\filesystem\filesystem(),
-			$request,
-			$phpbb_root_path,
-			'php'
-		);
+		$path_helper = $this->getMockBuilder('\phpbb\path_helper')
+			->disableOriginalConstructor()
+			->setMethods(array('get_web_root_path'))
+			->getMock();
+		$path_helper->expects($this->any())
+			->method('get_web_root_path')
+			->willReturn($phpbb_root_path);
+
+		/** @var \phpbb\event\dispatcher_interface|\PHPUnit_Framework_MockObject_MockObject $dispatcher */
+		$dispatcher = $this->getMockBuilder('\phpbb\event\dispatcher_interface')
+			->getMock();
 
 		$phpbb_container = new \phpbb_mock_container_builder();
-		$phpbb_container->set('avatar.manager', new \phpbb\avatar\manager($config, array($this->avatar_driver)));
-		$phpbb_container->set('path_helper', $phpbb_path_helper);
+		$phpbb_container->set('avatar.manager', new \phpbb\avatar\manager($config, $dispatcher, array($this->avatar_driver)));
+		$phpbb_container->set('path_helper', $path_helper);
 	}
 
 	public function topic_preview_display_data()
 	{
 		global $phpbb_root_path;
-		$no_avatar = '<img class="avatar" src="' . $phpbb_root_path . 'styles/prosilver/theme/images/no_avatar.gif" width="' . self::$avatar_data['width'] . '" height="' . self::$avatar_data['height'] . '" alt="User avatar" />';
 		$lazy_avatar = '<img class="avatar" src="' . $phpbb_root_path . 'styles/prosilver/theme/images/no_avatar.gif" data-src="%s" width="' . self::$avatar_data['width'] . '" height="' . self::$avatar_data['height'] . '" alt="USER_AVATAR" />';
 
 		return array(
@@ -85,7 +86,7 @@ class display_topic_preview_test extends base
 					'TOPIC_PREVIEW_FIRST_POST' => 'First message',
 					'TOPIC_PREVIEW_FIRST_AVATAR' => sprintf($lazy_avatar, self::$avatar_data['src']),
 					'TOPIC_PREVIEW_LAST_POST' => '',
-					'TOPIC_PREVIEW_LAST_AVATAR' => $no_avatar,
+					'TOPIC_PREVIEW_LAST_AVATAR' => \vse\topicpreview\core\display::NO_AVATAR,
 				),
 			),
 			array(
@@ -119,7 +120,7 @@ class display_topic_preview_test extends base
 				),
 				array(
 					'TOPIC_PREVIEW_FIRST_POST' => 'Third message with magic url and test@google.com email',
-					'TOPIC_PREVIEW_FIRST_AVATAR' => $no_avatar,
+					'TOPIC_PREVIEW_FIRST_AVATAR' => \vse\topicpreview\core\display::NO_AVATAR,
 					'TOPIC_PREVIEW_LAST_POST' => str_repeat ('a', 150) . '...',
 					'TOPIC_PREVIEW_LAST_AVATAR' => sprintf($lazy_avatar, self::$avatar_data['src']),
 				),
@@ -137,9 +138,9 @@ class display_topic_preview_test extends base
 				),
 				array(
 					'TOPIC_PREVIEW_FIRST_POST' => '',
-					'TOPIC_PREVIEW_FIRST_AVATAR' => $no_avatar,
+					'TOPIC_PREVIEW_FIRST_AVATAR' => \vse\topicpreview\core\display::NO_AVATAR,
 					'TOPIC_PREVIEW_LAST_POST' => '',
-					'TOPIC_PREVIEW_LAST_AVATAR' => $no_avatar,
+					'TOPIC_PREVIEW_LAST_AVATAR' => \vse\topicpreview\core\display::NO_AVATAR,
 				),
 			),
 			array(

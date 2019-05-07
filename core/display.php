@@ -25,6 +25,9 @@ class display extends base
 	/** @var int default height and width of topic preview avatars */
 	const AVATAR_SIZE = 60;
 
+	/** @var string */
+	const NO_AVATAR = 'no-avatar';
+
 	/** @var dispatcher_interface */
 	protected $dispatcher;
 
@@ -170,7 +173,7 @@ class display extends base
 		}
 
 		// If avatar string is empty, fall back to no_avatar.gif
-		return $avatar ?: '<img class="avatar" src="' . $this->root_path . 'styles/' . rawurlencode($this->user->style['style_path']) . '/theme/images/no_avatar.gif" width="' . self::AVATAR_SIZE . '" height="' . self::AVATAR_SIZE . '" alt="' . $this->language->lang('USER_AVATAR') . '" />';
+		return $avatar ?: self::NO_AVATAR;
 	}
 
 	/**
